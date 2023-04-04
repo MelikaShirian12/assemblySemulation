@@ -25,7 +25,7 @@ char J_TYPE [][5] = {"j" , "halt"};//2
 
 struct Program readingFiles();
 
-void find_Labels(struct Program * structProgram);
+boolean find_Labels(struct Program * structProgram);
 
 enum J_TYPE {
     j , halt
@@ -59,7 +59,11 @@ int main() {
 
     struct Program programLines = readingFiles();
 
-    find_Labels(& programLines);
+    boolean true_labels = find_Labels(& programLines);
+    if ( !true_labels ){
+        //write the error
+    }
+
 
 
 
@@ -133,7 +137,7 @@ boolean check_label(char * token){
 
 }
 
-void find_Labels(struct Program * structProgram){
+boolean find_Labels(struct Program * structProgram){
 
     structProgram->labels_num = 0;
     for (int i=0 ; i<structProgram->inputSize ; ++i) {
@@ -145,15 +149,12 @@ void find_Labels(struct Program * structProgram){
             checking = check_duplication(token , structProgram , i); //i is for address place
 
          if (checking != 0)
-         {
-
-             //exceptionnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
-
-
-         }
-
-
+             //this means that we had a duplicated label and we have an exception
+             return 0;
     }
+
+    //we have founded all the labels , and they all are different from one another
+    return 1;
 
 }
 
