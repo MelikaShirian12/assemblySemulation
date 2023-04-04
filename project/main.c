@@ -33,6 +33,12 @@ enum J_TYPE {
 
 //=================structs===============
 
+struct Error{
+    int address;
+    char lineOfError[250];
+    char errorInfo[60];
+};
+
 struct MyMap{
     char each_label[20];
     int address;
@@ -63,9 +69,6 @@ int main() {
     if ( !true_labels ){
         //write the error
     }
-
-
-
 
     return 0;
 }
@@ -106,7 +109,7 @@ struct Program readingFiles(){
 boolean check_duplication(char * token , struct Program * structProgram , int row_place){
 
     for (int i = 0; i <structProgram->labels_num ; ++i)
-        if (strcmp(structProgram->label[i].each_label , token) != 0)
+        if (strcmp(structProgram->label[i].each_label , token) == 0)
             return 1;
 
      strcpy(structProgram->label[structProgram->labels_num].each_label , token);
@@ -121,16 +124,16 @@ boolean check_duplication(char * token , struct Program * structProgram , int ro
 boolean check_label(char * token){
 
     for (int i = 0; i <5 ; ++i)
-        if (strcmp(R_TYPE[i] , token) != 0)
+        if (strcmp(R_TYPE[i] , token) == 0)
             return 0;
 
 
     for (int i = 0; i <8 ; ++i)
-        if (strcmp(I_TYPE[i] , token) != 0)
+        if (strcmp(I_TYPE[i] , token) == 0)
             return 0;
 
     for (int i = 0; i <2 ; ++i)
-        if (strcmp(J_TYPE[i] , token) != 0)
+        if (strcmp(J_TYPE[i] , token) == 0)
             return 0;
 
     return 1;
@@ -144,7 +147,7 @@ boolean find_Labels(struct Program * structProgram){
 
         char *token = strtok(structProgram->inputProgram[i], " ");
 
-        boolean checking;
+        boolean checking = 0;
         if(check_label(token) != 0 )
             checking = check_duplication(token , structProgram , i); //i is for address place
 
