@@ -23,6 +23,12 @@
 
 #endif
 
+struct Program readingFiles();
+
+struct Program{
+
+    char inputProgram [100][250];
+};
 
 int main() {
 
@@ -32,6 +38,39 @@ int main() {
     else
         printf("Hello, linux!\n");
 
+    struct Program programLines = readingFiles();
+
+
 
     return 0;
+}
+
+
+struct Program readingFiles(){
+
+    int bufferLength = 250;
+    char buffer [bufferLength];
+
+    FILE *fptr;
+    fptr = fopen("address" , "r");
+
+    if (fptr == NULL)
+        printf("could not find the address !");
+
+
+    struct Program structProgram;
+
+    int i=0;
+    while(fgets(buffer, bufferLength, fptr)) {
+
+        // it reads every line and writes it down to buffer
+        strcpy( structProgram.inputProgram[i] ,buffer);
+        ++i;
+    }
+
+
+    fclose(fptr);
+
+    return structProgram;
+
 }
