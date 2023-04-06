@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 
 #ifdef __unix__                    /* __unix__ is usually defined by compilers targeting Unix systems */
 
@@ -28,6 +29,8 @@ struct Program readingFiles();
 boolean find_Labels(struct Program * structProgram);
 
 void check_line_by_line(struct Program * structProgram);
+
+long int hex_to_decimal (char * hexdecnumber);
 //=================structs===============
 
 
@@ -436,4 +439,77 @@ void check_line_by_line(struct Program * structProgram){
 }
 
 
-//===================================
+//===================================decimal and hex
+
+
+void swap(char * str) {
+
+    int j = ((int) strlen(str))-1;
+    for (int i = 0; i < (int) strlen(str) / 2; i++) {
+        char tmp = str[i];
+        str[i] = str[strlen(str) -j];
+        str[strlen(str) -j] = tmp;
+
+        --j;
+    }
+}
+
+char* decimal_to_hex(long int decimalNumber){
+     long int remainder,quotient;
+    int i=0,j,temp;
+    char hexadecimalNumber[100];
+    quotient = decimalNumber;
+    while(quotient!=0) {
+        temp = quotient % 16;
+        //To convert integer into character
+        if( temp < 10)
+            temp =temp + 48; else
+            temp = temp + 55; //for making A B C ...
+        hexadecimalNumber[i++]= temp;
+        quotient = quotient / 16;
+    }
+
+    hexadecimalNumber[i] = '\0';
+    swap (hexadecimalNumber);
+    return hexadecimalNumber;
+}
+
+
+long int hex_to_decimal (char * hexdecnumber){
+
+    long long decimalnumber, place;
+    int i = 0, val, len;
+
+    decimalnumber = 0;
+    place = 1;
+
+    // Find the length of total number of hex digit
+    // finding the length of hexa decimal number
+    len = strlen(hexdecnumber);
+    len--;
+
+    // for loop iterates the hexa decimal number digits
+    for (i = 0; hexdecnumber[i] != '\0'; i++) {
+
+        // finding the equivalent decimal digit for each
+        // hexa decimal digit
+        if (hexdecnumber[i] >= '0'
+            && hexdecnumber[i] <= '9') {
+            val = hexdecnumber[i] - 48;
+        }
+        else if (hexdecnumber[i] >= 'a'
+                 && hexdecnumber[i] <= 'f') {
+            val = hexdecnumber[i] - 97 + 10;
+        }
+        else if (hexdecnumber[i] >= 'A'
+                 && hexdecnumber[i] <= 'F') {
+            val = hexdecnumber[i] - 65 + 10;
+        }
+
+        decimalnumber += val * pow(16, len);
+        len--;
+    }
+    return decimalnumber;
+
+
+}
