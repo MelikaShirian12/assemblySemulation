@@ -9,6 +9,8 @@
 D:/university/programs - memari/assembly project/assemblySemulation/project/main.c
 stdio.h
 -
+math.h
+-
 unistd.h
 -
 stdlib.h
