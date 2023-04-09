@@ -34,7 +34,7 @@ long int hex_to_decimal (char * hexdecnumber);
 
 boolean makeMachineCode(struct Program *structProgram);
 
-//void writing_errors(struct Error error);
+void writing_errors(struct Error error);
 //=================structs===============
 
 
@@ -107,8 +107,8 @@ int main() {
     makeMachineCode(& programLines);
 
 
-    //struct Error error = {1 , "p"};
-    //writing_errors(error);
+    struct Error error = {1 , "p"};
+    writing_errors(error);
 
     return 0;
 }
