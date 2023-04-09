@@ -101,11 +101,11 @@ int main() {
 
     boolean true_labels = find_Labels(& programLines);
     if ( !true_labels )
-        return 1;
+        exit(1);
 
     boolean true = check_line_by_line(& programLines);
     if (!true)
-        return 1;
+        exit(1);
 
     makeMachineCode(& programLines);
 
@@ -299,7 +299,7 @@ boolean makeOpInstruction(char * token ,struct Program * structProgram , int siz
     enum Types type = turnType(token  , & opCode);
 
     if (type == Null) {
-        printf("There is no such instruction !");
+        printf("There is no such instruction ! :%d " , size);
         make_the_error("There is no such instruction" , size);
 
         return 0;//which means we don't have that sort of inst
