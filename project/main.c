@@ -31,6 +31,8 @@ boolean find_Labels(struct Program * structProgram);
 void check_line_by_line(struct Program * structProgram);
 
 long int hex_to_decimal (char * hexdecnumber);
+
+boolean makeMachineCode(struct Program *structProgram);
 //=================structs===============
 
 
@@ -39,9 +41,16 @@ enum Types{
 };
 
 
+struct MachineCode{
+
+    char hexMachineCode[9];
+    long int  decimalMachineCode;
+};
+
 struct Instruction{
 
-    enum Types insType ;
+    enum Types insType;
+    struct MachineCode machineCode;
     char inst[50];
     int rs;
     int rt;
@@ -49,10 +58,8 @@ struct Instruction{
     int imm; //and target address
     int PC;
     int opCode;
-
-
-
 };
+
 
 struct Error{
     int address;
@@ -94,6 +101,10 @@ int main() {
     }
 
     check_line_by_line(& programLines);
+
+    makeMachineCode(& programLines);
+
+
 
     return 0;
 }
@@ -262,7 +273,7 @@ boolean makeOpInstruction(char * token ,struct Program * structProgram , int siz
      structProgram->instructions[size] = new_instruction;
 
      if (opCode == 14){
-         structProgram->instructions[size].imm = 14;
+         structProgram->instructions[size].imm = 0;
          structProgram->instructions[size].rs = -1;
          structProgram->instructions[size].rt = -1;
          structProgram->instructions[size].rd = -1;
@@ -333,7 +344,7 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
         }
         //this means we have to fill in the rd
         if(num_of_register == 1)
-            structProgram->instructions[size].rd = result;
+            structProgram->instructions[size].rt= result;
         else if (num_of_register == 2) //this means we are on the second register -> rs
             structProgram->instructions[size].rs = result;
         else
@@ -346,7 +357,7 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
                 structProgram->instructions[size].rt = result;
                 structProgram->instructions[size].imm = -100;
             }else{
-                structProgram->instructions[size].rt = -1;
+                structProgram->instructions[size].rd = -1;
                 if (my_register[0] <= '9' && my_register[0] >= '0'){
 
                     char * tmp ;
@@ -439,7 +450,7 @@ void check_line_by_line(struct Program * structProgram){
 }
 
 
-//===================================decimal and hex
+//===================================decimal and hex==================================
 
 
 void swap(char * str) {
@@ -457,8 +468,9 @@ void swap(char * str) {
 char* decimal_to_hex(long int decimalNumber){
      long int remainder,quotient;
     int i=0,j,temp;
-    char hexadecimalNumber[100];
+    char * hexadecimalNumber = malloc(sizeof(char)*100);
     quotient = decimalNumber;
+
     while(quotient!=0) {
         temp = quotient % 16;
         //To convert integer into character
@@ -469,7 +481,13 @@ char* decimal_to_hex(long int decimalNumber){
         quotient = quotient / 16;
     }
 
-    hexadecimalNumber[i] = '\0';
+    if(i != 0)
+        hexadecimalNumber[i] = '\0';
+    else {
+        hexadecimalNumber[i] = '0';
+        hexadecimalNumber[i + 1] = '\0';
+    }
+
     swap (hexadecimalNumber);
     return hexadecimalNumber;
 }
@@ -510,6 +528,89 @@ long int hex_to_decimal (char * hexdecnumber){
         len--;
     }
     return decimalnumber;
+}
 
 
+//=====================================make the machine code ==============================
+
+ boolean makeMachineCode(struct Program *structProgram){
+
+    for (int i = 0; i <structProgram->inputSize ; ++i) {
+        char eachMachineCode [9];
+
+
+        char opCode = decimal_to_hex(structProgram->instructions[i].opCode)[0];
+
+        eachMachineCode[1] = opCode;
+        eachMachineCode[0]='0';
+        eachMachineCode[8] = '\0';
+
+        switch (structProgram->instructions[i].insType) {
+
+            case Rtype:
+                eachMachineCode[7]='0';
+                eachMachineCode[6]='0';
+                eachMachineCode[5]='0';
+
+                char rt = decimal_to_hex(structProgram->instructions[i].rt)[0];
+                char rs = decimal_to_hex(structProgram->instructions[i].rs)[0];
+                char rd = decimal_to_hex(structProgram->instructions[i].rd)[0];
+
+                eachMachineCode[4]= rd;
+                eachMachineCode[3] = rt;
+                eachMachineCode[2] = rs;
+
+                break;
+
+            case Itype:
+
+
+                rt = decimal_to_hex(structProgram->instructions[i].rt)[0];
+                rs = decimal_to_hex(structProgram->instructions[i].rs)[0];
+
+                eachMachineCode[3] = rt;
+                eachMachineCode[2] = rs;
+
+
+                char *tmpImm = decimal_to_hex(structProgram->instructions[i].imm);
+
+
+                int tmpDif = 4 - (int)strlen(tmpImm);
+
+                for(int j = 0 ; j  < tmpDif; j++)
+                    eachMachineCode[j+4] = '0';
+
+                for(int j = 0 ; j < 4 ; j++)
+                    eachMachineCode[j+4+tmpDif] = tmpImm[j];
+
+                break;
+
+            case Jtype:
+
+                tmpImm = decimal_to_hex(structProgram->instructions[i].imm);
+
+
+
+                tmpDif = 4 - (int)strlen(tmpImm);
+
+                for(int j = 0 ; j  < tmpDif; j++)
+                    eachMachineCode[j+4] = '0';
+
+                for(int j = 0 ; j < 4 ; j++)
+                    eachMachineCode[j+4+tmpDif] = tmpImm[j];
+
+
+                eachMachineCode[3] = '0';
+                eachMachineCode[2] = '0';
+
+                break;
+
+        }
+
+        strcpy((char *) structProgram->instructions[i].machineCode.hexMachineCode, eachMachineCode);
+        structProgram->instructions[i].machineCode.decimalMachineCode = hex_to_decimal(eachMachineCode);
+
+    }
+
+    return 1;
 }
