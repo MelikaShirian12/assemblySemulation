@@ -79,7 +79,7 @@ struct Program readingFiles();
 
 boolean find_Labels(struct Program * structProgram);
 
-void check_line_by_line(struct Program * structProgram);
+boolean check_line_by_line(struct Program * structProgram);
 
 long int hex_to_decimal (char * hexdecnumber);
 
@@ -100,17 +100,14 @@ int main() {
     struct Program programLines = readingFiles();
 
     boolean true_labels = find_Labels(& programLines);
-    if ( !true_labels ){
-        //write the error
-    }
+    if ( !true_labels )
+        return 1;
 
-    check_line_by_line(& programLines);
+    boolean true = check_line_by_line(& programLines);
+    if (!true)
+        return 1;
 
     makeMachineCode(& programLines);
-
-    struct Error error ;
-    writing_errors(error);
-
 
 
     return 0;
@@ -227,15 +224,16 @@ boolean find_Labels(struct Program * structProgram){
         char *token = strtok(structProgram->inputProgram[i], "\t");
 
         int  checking = 0;
-        if(check_label(token) != 0 )
-            checking = check_duplication(token , structProgram , i); //i is for address place
+        if(check_label(token) != 0 ) {
+            checking = check_duplication(token, structProgram, i); //i is for address place
 
-         if (checking > 0) {
-             //this means that we had a duplicated label and we have an exception
-             printf("You have duplicated labels in the code");
-             struct Error error;//eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-         }
-             return 0;
+            if (checking != -1) {
+                //this means that we had a duplicated label and we have an exception
+                printf("You have duplicated labels in the code");
+                make_the_error("You have duplicated labels in the code", i);
+                return 0;
+            }
+        }
 
 
         strcpy(structProgram->inputProgram[i] , backup);
@@ -300,9 +298,12 @@ boolean makeOpInstruction(char * token ,struct Program * structProgram , int siz
     int opCode = 0;
     enum Types type = turnType(token  , & opCode);
 
-    if (type == Null)
-        return 0;//which means we don't have that sort of inst
+    if (type == Null) {
+        printf("There is no such instruction !");
+        make_the_error("There is no such instruction" , size);
 
+        return 0;//which means we don't have that sort of inst
+    }
      struct Instruction new_instruction ;
      new_instruction.opCode = opCode;
      new_instruction.insType = type;
@@ -352,15 +353,24 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
     if(structProgram->instructions[size].insType == Jtype) {
         if (structProgram->instructions[size].opCode != 14) {//if it was not halt
 
-            if (my_register[0] <= '9' && my_register[0] >= '0') {
+            if ((my_register[0] <= '9' && my_register[0] >= '0') || my_register[0] == '-') {
 
                 char *tmp;
                 structProgram->instructions[size].imm = strtol(my_register, &tmp, 10);
+                if (abs(structProgram->instructions[size].imm) > 65535){
+                    //because 2 ^16 is in 7 bits (10000000000000000)that we have 16 zeros
+                    printf("imm is greater than 16 bits :%d",size);
+                    make_the_error("imm is greater than 16 bits" , size);
+                    return 0;
+                }
             } else {
                 int address = find_label_value(my_register, structProgram);
-                if (address < 0)
-                    //exception
+                if (address < 0) {
+
+                    printf("couldn't find the label: %d",size);
+                    make_the_error("couldn't find the label", size);
                     return 0;
+                }
                 structProgram->instructions[size].imm = address;
                 structProgram->instructions[size].rs = -1;
                 structProgram->instructions[size].rt = -1;
@@ -378,8 +388,11 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
         int result;
         if (num_of_register != 3) {
             result = calculateRegister(my_register);
-            if (result < 0)
+            if (result < 0) {
+                printf("wrong register input");
+                make_the_error("wrong register input" , size);
                 return 0;
+            }
         }
         //this means we have to fill in the rd
         if(num_of_register == 1)
@@ -390,22 +403,36 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
             if(structProgram->instructions[size].insType == Rtype) { //we have an r type so we should fill in the rt
 
                 result = calculateRegister(my_register);
-                if (result < 0)//exception
+                if (result < 0) {//exception
+
+                    printf("wrong register input :%d",size);
+                    make_the_error("wrong register input" , size);
+
                     return 0;
+                }
                 //and make immediate value , null
                 structProgram->instructions[size].rt = result;
                 structProgram->instructions[size].imm = -100;
             }else{
                 structProgram->instructions[size].rd = -1;
-                if (my_register[0] <= '9' && my_register[0] >= '0'){
+                if ((my_register[0] <= '9' && my_register[0] >= '0') || my_register[0] == '-' ){
 
                     char * tmp ;
                     structProgram->instructions[size].imm = strtol(my_register , & tmp , 10);
+                    if (abs(structProgram->instructions[size].imm) > 65535){
+                        //because 2 ^16 is in 7 bits (10000000000000000)that we have 16 zeros
+                        printf("imm is greater than 16 bits :%d",size);
+                        make_the_error("imm is greater than 16 bits" , size);
+                        return 0;
+                    }
                 } else{
                     int address = find_label_value(my_register , structProgram);
-                    if (address < 0)
-                        //exception
+                    if (address < 0) {
+
+                        printf("could not find the label :%d",size);
+                        make_the_error("wrong register input" , size);
                         return 0;
+                    }
                     structProgram->instructions[size].imm = address;
                 }
 
@@ -422,7 +449,7 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
 }
 
 
-void check_line_by_line(struct Program * structProgram){
+boolean check_line_by_line(struct Program * structProgram){
 
     for (int i=0 ; i<structProgram->inputSize ; ++i) {
 
@@ -434,6 +461,7 @@ void check_line_by_line(struct Program * structProgram){
         int spaceNum = 0;
         int checking = 0;
         while( token != NULL ) {
+
 
             if(token[strlen(token) - 1] == '\n')
                 token[strlen(token) - 1] = '\0';
@@ -452,7 +480,7 @@ void check_line_by_line(struct Program * structProgram){
                         ++checking;//which means we already check the instruction
                         if (check == 0 ){
                             //exception
-                            return;
+                            return 0;
                         }
                     }
                     break;
@@ -464,14 +492,14 @@ void check_line_by_line(struct Program * structProgram){
                         --spaceNum;
                         if (check == 0 ){
                             //exception
-                            return;
+                            return 0;
                         }
                         break;
                     }
                     check = makeRegiInstruction(token, structProgram , i);
                     if (check == 0){
                         //exception
-                        return;
+                        return 0;
                     } //else //structProgram->instructions[i].inst = structProgram->inputProgram[i]; fill
                     break;
 
@@ -485,6 +513,8 @@ void check_line_by_line(struct Program * structProgram){
 
         strcpy(structProgram->inputProgram[i] , backup);
     }
+
+    return 1;
 
 }
 
