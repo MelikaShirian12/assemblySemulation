@@ -24,17 +24,6 @@ char R_TYPE [][5]= {"add","sub" ,"slt","or","nand"}; //5
 char I_TYPE [][5] ={"addi" , "ori" , "slti", "lui", "lw" , "sw" , "beq", "jalr"};//8
 char J_TYPE [][5] = {"j" , "halt"};//2
 
-struct Program readingFiles();
-
-boolean find_Labels(struct Program * structProgram);
-
-void check_line_by_line(struct Program * structProgram);
-
-long int hex_to_decimal (char * hexdecnumber);
-
-boolean makeMachineCode(struct Program *structProgram);
-
-void writing_errors(struct Error error);
 //=================structs===============
 
 
@@ -86,6 +75,19 @@ struct Program{
 };
 
 
+struct Program readingFiles();
+
+boolean find_Labels(struct Program * structProgram);
+
+void check_line_by_line(struct Program * structProgram);
+
+long int hex_to_decimal (char * hexdecnumber);
+
+boolean makeMachineCode(struct Program *structProgram);
+
+void writing_errors(struct Error error);
+
+
 //=================functions==================
 
 int main() {
@@ -106,9 +108,10 @@ int main() {
 
     makeMachineCode(& programLines);
 
-
-    struct Error error = {1 , "p"};
+    struct Error error ;
     writing_errors(error);
+
+
 
     return 0;
 }
@@ -147,13 +150,28 @@ struct Program readingFiles(){
 
 }
 
+void make_the_error(char * errorString , int address){
+
+    struct Error error ;
+    error.address = address;
+    strcpy(error.errorInfo , errorString);
+
+    writing_errors(error);
+
+}
+
 void writing_errors(struct Error error){
 
     FILE * fptr;
-    fptr = fopen("testWriting.txt" , "w");
+    fptr = fopen("testWriting.txt" , "a");
 
-    struct Error error2 = {4, "this is an error "};
-    fwrite(& error2 , sizeof(struct Error) ,1 , fptr );
+   // struct Error error2 = {4, "this is an error "};
+    fwrite(& error , sizeof(struct Error) ,1 , fptr );
+    fprintf(fptr , "\n");
+
+
+
+    fclose(fptr);
 
 }
 
@@ -164,17 +182,17 @@ void writing_assembly(){
 
 //============================labels===============================================
 
-boolean check_duplication(char * token , struct Program * structProgram , int row_place){
+int check_duplication(char * token , struct Program * structProgram , int row_place){
 
     for (int i = 0; i <structProgram->labels_num ; ++i)
         if (strcmp(structProgram->label[i].each_label , token) == 0)
-            return 1;
+            return i;
 
      strcpy(structProgram->label[structProgram->labels_num].each_label , token);
     structProgram->label[structProgram->labels_num].address = row_place;
      ++structProgram->labels_num;
 
-     return 0;
+     return -1;
 
 }
 
@@ -208,12 +226,15 @@ boolean find_Labels(struct Program * structProgram){
 
         char *token = strtok(structProgram->inputProgram[i], "\t");
 
-        boolean checking = 0;
+        int  checking = 0;
         if(check_label(token) != 0 )
             checking = check_duplication(token , structProgram , i); //i is for address place
 
-         if (checking != 0)
+         if (checking > 0) {
              //this means that we had a duplicated label and we have an exception
+             printf("You have duplicated labels in the code");
+             struct Error error;//eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+         }
              return 0;
 
 
