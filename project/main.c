@@ -33,6 +33,8 @@ void check_line_by_line(struct Program * structProgram);
 long int hex_to_decimal (char * hexdecnumber);
 
 boolean makeMachineCode(struct Program *structProgram);
+
+//void writing_errors(struct Error error);
 //=================structs===============
 
 
@@ -63,7 +65,7 @@ struct Instruction{
 
 struct Error{
     int address;
-    char lineOfError[250];
+    //char lineOfError[250];
     char errorInfo[60];
 };
 
@@ -105,6 +107,8 @@ int main() {
     makeMachineCode(& programLines);
 
 
+    //struct Error error = {1 , "p"};
+    //writing_errors(error);
 
     return 0;
 }
@@ -140,6 +144,20 @@ struct Program readingFiles(){
     fclose(fptr);
 
     return structProgram;
+
+}
+
+void writing_errors(struct Error error){
+
+    FILE * fptr;
+    fptr = fopen("testWriting.txt" , "w");
+
+    struct Error error2 = {4, "this is an error "};
+    fwrite(& error2 , sizeof(struct Error) ,1 , fptr );
+
+}
+
+void writing_assembly(){
 
 }
 
