@@ -87,6 +87,7 @@ boolean makeMachineCode(struct Program *structProgram);
 
 void writing_errors(struct Error error);
 
+void write_output(char * fileName , struct Program * structProgram);
 
 //=================functions==================
 
@@ -96,6 +97,12 @@ int main() {
         printf("Hello, Welcome to windows!\n");
     else
         printf("Hello, linux!\n");
+
+
+    printf("write your command as : assemble program.as program.mc\n");
+
+    char * String;
+
 
     struct Program programLines = readingFiles();
 
@@ -109,10 +116,11 @@ int main() {
 
     makeMachineCode(& programLines);
 
+    write_output(String , &programLines);
+
 
     return 0;
 }
-
 
 //============================files=================================================
 
@@ -172,10 +180,26 @@ void writing_errors(struct Error error){
 
 }
 
-void writing_assembly(){
+void write_output(char * fileName , struct Program * structProgram)
+{
+    FILE * filePtr;
+    filePtr = fopen(fileName , "w");
+    fprintf(filePtr , "");
+    fclose(filePtr);
 
+    filePtr = fopen(fileName , "a");
+
+    //to check if file does not exist
+    if (filePtr == NULL)
+    {
+        printf("file can't be opened \n");
+        exit(1);
+    }
+    for(int i = 0 ; i < structProgram->inputSize; i++)
+        fprintf (filePtr ,"%d\n" , (int) structProgram->instructions[i].machineCode.decimalMachineCode);
+
+    fclose(filePtr);
 }
-
 
 //============================labels===============================================
 
