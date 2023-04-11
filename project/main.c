@@ -28,7 +28,7 @@ char J_TYPE [][5] = {"j" , "halt"};//2
 
 
 enum Types{
-    Itype , Rtype , Jtype , Null
+    Itype , Rtype , Jtype , Null, DOTtype
 };
 
 
@@ -49,6 +49,7 @@ struct Instruction{
     int imm; //and target address
     int PC;
     int opCode;
+    int directory;
 };
 
 
@@ -75,7 +76,7 @@ struct Program{
 };
 
 
-struct Program readingFiles();
+struct Program readingFiles(char * address);
 
 boolean find_Labels(struct Program * structProgram);
 
@@ -101,10 +102,18 @@ int main() {
 
     printf("write your command as : assemble program.as program.mc\n");
 
-    char * String;
+
+    char String [50] ;
+    gets(String);
+
+    char *address= strtok(String , " ");
+    address = strtok(NULL , " ");
 
 
-    struct Program programLines = readingFiles();
+    struct Program programLines = readingFiles(address);
+
+    address = strtok(NULL , " ");
+
 
     boolean true_labels = find_Labels(& programLines);
     if ( !true_labels )
@@ -116,7 +125,8 @@ int main() {
 
     makeMachineCode(& programLines);
 
-    write_output(String , &programLines);
+
+    write_output(address, &programLines);
 
 
     return 0;
@@ -124,13 +134,13 @@ int main() {
 
 //============================files=================================================
 
-struct Program readingFiles(){
+struct Program readingFiles(char * address){
 
     int bufferLength = 250;
     char buffer [bufferLength];
 
     FILE *fptr;
-    fptr = fopen("testReading.txt" , "r");
+    fptr = fopen(address, "r");
 
     if (fptr == NULL)
         printf("could not find the address !");
@@ -186,7 +196,6 @@ void write_output(char * fileName , struct Program * structProgram)
     filePtr = fopen(fileName , "w");
     fprintf(filePtr , "");
     fclose(filePtr);
-
     filePtr = fopen(fileName , "a");
 
     //to check if file does not exist
@@ -219,6 +228,11 @@ int check_duplication(char * token , struct Program * structProgram , int row_pl
 
 boolean check_label(char * token){
 
+    if (strcmp(token , ".fill") == 0)
+        return 0;
+    if (strcmp(token , ".space") == 0)
+        return 0;
+
     for (int i = 0; i <5 ; ++i)
         if (strcmp(R_TYPE[i] , token) == 0)
             return 0;
@@ -231,6 +245,7 @@ boolean check_label(char * token){
     for (int i = 0; i <2 ; ++i)
         if (strcmp(J_TYPE[i] , token) == 0)
             return 0;
+
 
     return 1;
 
@@ -323,10 +338,21 @@ boolean makeOpInstruction(char * token ,struct Program * structProgram , int siz
     enum Types type = turnType(token  , & opCode);
 
     if (type == Null) {
-        printf("There is no such instruction ! :%d " , size);
-        make_the_error("There is no such instruction" , size);
+        if(strcmp(token , ".fill") !=0 && strcmp(token , ".space") != 0) {
+            printf("There is no such instruction ! :%d ", size);
+            make_the_error("There is no such instruction", size);
 
-        return 0;//which means we don't have that sort of inst
+            return 0;//which means we don't have that sort of inst
+        } else{
+            struct Instruction new_instruction ;
+            new_instruction.insType = DOTtype;
+            new_instruction.PC= size;
+
+            structProgram->instructions[size] = new_instruction;
+
+
+            return 1;
+        }
     }
      struct Instruction new_instruction ;
      new_instruction.opCode = opCode;
@@ -374,6 +400,29 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
     //split the registers
     char  *my_register =  strtok(token, ",");
 
+
+    //for directory type
+    if (structProgram->instructions[size].insType == DOTtype){
+        if ((my_register[0] <= '9' && my_register[0] >= '0') || my_register[0] == '-'){
+            char *tmp;
+            structProgram->instructions[size].directory = strtol(my_register, &tmp, 10);
+        } else{
+            int address = find_label_value(my_register, structProgram);
+            if (address < 0) {
+
+                printf("couldn't find the label: %d",size);
+                make_the_error("couldn't find the label", size);
+                return 0;
+            }
+            structProgram->instructions[size].directory = address;
+
+            return 1;
+
+        }
+    }
+
+
+    //for JTYPE =============================================================================================
     if(structProgram->instructions[size].insType == Jtype) {
         if (structProgram->instructions[size].opCode != 14) {//if it was not halt
 
@@ -406,6 +455,8 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
 
     }
 
+
+    // for ITPYE and RTYPE =============================================================================================
     int num_of_register = 1;
     while( my_register != NULL ){
 
@@ -629,6 +680,7 @@ long int hex_to_decimal (char * hexdecnumber){
  boolean makeMachineCode(struct Program *structProgram){
 
     for (int i = 0; i <structProgram->inputSize ; ++i) {
+        int dicChecker =0;
         char eachMachineCode [9];
 
 
@@ -698,7 +750,17 @@ long int hex_to_decimal (char * hexdecnumber){
 
                 break;
 
+
+                case DOTtype:
+                    structProgram->instructions[i].machineCode.decimalMachineCode =
+                            structProgram->instructions[i].directory;
+                    dicChecker =1;
+                    break;
+
         }
+
+        if (dicChecker == 1)
+            continue;
 
         strcpy((char *) structProgram->instructions[i].machineCode.hexMachineCode, eachMachineCode);
         structProgram->instructions[i].machineCode.decimalMachineCode = hex_to_decimal(eachMachineCode);
