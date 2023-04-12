@@ -1,5 +1,0 @@
-	.fill	5
-start	.fill	five
-	j	five
-five	j	exit
-exit	halt

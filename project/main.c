@@ -406,6 +406,7 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
         if ((my_register[0] <= '9' && my_register[0] >= '0') || my_register[0] == '-'){
             char *tmp;
             structProgram->instructions[size].directory = strtol(my_register, &tmp, 10);
+            return 1;
         } else{
             int address = find_label_value(my_register, structProgram);
             if (address < 0) {
@@ -464,7 +465,7 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
         if (num_of_register != 3) {
             result = calculateRegister(my_register);
             if (result < 0) {
-                printf("wrong register input");
+                printf("wrong register input :%d",size);
                 make_the_error("wrong register input" , size);
                 return 0;
             }
