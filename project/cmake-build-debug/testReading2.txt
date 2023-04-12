@@ -1,0 +1,10 @@
+	add	1,2,3	#hello
+	addi	4,4,5
+start	ori	3,3,-1
+	lw	2,2,five	#check
+	beq	0,1,done
+	lw	2,1,2
+done	j	end
+end	halt
+five	.fill	-1
+	.fill	5
