@@ -470,15 +470,9 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
                 return 0;
             }
         }
-        //this means we have to fill in the rd
-        if(num_of_register == 1)
-            structProgram->instructions[size].rt= result;
-        else if (num_of_register == 2) //this means we are on the second register -> rs
-            structProgram->instructions[size].rs = result;
-        else
+
             if(structProgram->instructions[size].insType == Rtype) { //we have an r type so we should fill in the rt
 
-                result = calculateRegister(my_register);
                 if (result < 0) {//exception
 
                     printf("wrong register input :%d",size);
@@ -486,33 +480,58 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
 
                     return 0;
                 }
-                //and make immediate value , null
-                structProgram->instructions[size].rt = result;
-                structProgram->instructions[size].imm = -100;
-            }else{
-                structProgram->instructions[size].rd = -1;
-                if ((my_register[0] <= '9' && my_register[0] >= '0') || my_register[0] == '-' ){
 
-                    char * tmp ;
-                    structProgram->instructions[size].imm = strtol(my_register , & tmp , 10);
-                    if (abs(structProgram->instructions[size].imm) > 65535){
-                        //because 2 ^16 is in 7 bits (10000000000000000)that we have 16 zeros
-                        printf("imm is greater than 16 bits :%d",size);
-                        make_the_error("imm is greater than 16 bits" , size);
-                        return 0;
-                    }
-                } else{
-                    int address = find_label_value(my_register , structProgram);
-                    if (address < 0) {
 
-                        printf("could not find the label :%d",size);
-                        make_the_error("wrong register input" , size);
-                        return 0;
-                    }
-                    structProgram->instructions[size].imm = address;
+                //this means we have to fill in the rd
+                if(num_of_register == 1)
+                    structProgram->instructions[size].rd= result;
+                else if (num_of_register == 2) //this means we are on the second register -> rs
+                    structProgram->instructions[size].rs = result;
+                else {
+                    //and make immediate value , null
+                    result = calculateRegister(my_register);
+                    structProgram->instructions[size].rt = result;
+                    structProgram->instructions[size].imm = -100;
                 }
+            }else {//Jtype
 
 
+                //this means we have to fill in the rd
+                if (num_of_register == 1) {
+
+                    structProgram->instructions[size].rt = result;
+                    structProgram->instructions[size].rd = -1;
+
+                    if (structProgram->instructions[size].opCode == 8)
+                        structProgram->instructions[size].rs = 0;
+
+                } else if (num_of_register == 2 && structProgram->instructions[size].opCode != 8)//this means we are on the second register -> rs
+                    structProgram->instructions[size].rs = result; //if it was not lui
+
+
+                else if(num_of_register == 3 || (structProgram->instructions[size].opCode == 8 && num_of_register ==2)){
+                    if ((my_register[0] <= '9' && my_register[0] >= '0') || my_register[0] == '-') {
+
+                        char *tmp;
+                        structProgram->instructions[size].imm = strtol(my_register, &tmp, 10);
+                        if (abs(structProgram->instructions[size].imm) > 65535) {
+                            //because 2 ^16 is in 7 bits (10000000000000000)that we have 16 zeros
+                            printf("imm is greater than 16 bits :%d", size);
+                            make_the_error("imm is greater than 16 bits", size);
+                            return 0;
+                        }
+                    } else {
+                        int address = find_label_value(my_register, structProgram);
+                        if (address < 0) {
+
+                            printf("could not find the label :%d", size);
+                            make_the_error("wrong register input", size);
+                            return 0;
+                        }
+                        structProgram->instructions[size].imm = address;
+                    }
+
+                }
             }
 
 

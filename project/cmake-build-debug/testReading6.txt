@@ -1,0 +1,9 @@
+slt	1,2,3	
+	addi	1,2,5	#load
+	lw	1,0,label
+label	addi	4,5,123
+	jalr	5,9
+	j	exit
+	lui	4,2
+loop	or	5,4,12
+exit	halt
