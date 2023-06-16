@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <math.h>
-
 #ifdef __unix__                    /* __unix__ is usually defined by compilers targeting Unix systems */
 
 #define OS_Windows 0

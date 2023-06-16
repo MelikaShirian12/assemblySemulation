@@ -3,3 +3,6 @@
 
 CMakeFiles/project.dir/main.c.obj: ../main.c
 
+CMakeFiles/project.dir/runCode.c.obj: ../main.c
+CMakeFiles/project.dir/runCode.c.obj: ../runCode.c
+
