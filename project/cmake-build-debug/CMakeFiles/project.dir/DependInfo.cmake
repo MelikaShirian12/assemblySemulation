@@ -5,6 +5,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
   "D:/university/programs - memari/assembly project/assemblySemulation/project/main.c" "D:/university/programs - memari/assembly project/assemblySemulation/project/cmake-build-debug/CMakeFiles/project.dir/main.c.obj"
+  "D:/university/programs - memari/assembly project/assemblySemulation/project/runCode.c" "D:/university/programs - memari/assembly project/assemblySemulation/project/cmake-build-debug/CMakeFiles/project.dir/runCode.c.obj"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 
