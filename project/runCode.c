@@ -138,8 +138,14 @@ int ALU(int opCode , int type , int firstBus , int secondBus) {
 }
 
 
-void memory(int aluRes , int opCode , int rt){
+void memory(int aluRes , int opCode , int rtData){
 
+    int lw_result = 0;
+    if (opCode == 9) //lw
+        lw_result = memFile.mem_file[aluRes];
+    else if (opCode == 10) //sw
+        memFile.mem_file[aluRes] = rtData;
+    
 }
 
 
