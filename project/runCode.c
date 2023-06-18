@@ -27,9 +27,10 @@ boolean fetch(struct Program * runningProgram, int PC);
 void decode(int rs , int rt , int rd, int opCode ,int imm, enum Types type , int PC);
 void exe(int rsData , int rtDAta ,int rt , int rd , int opCode ,int imm, enum Types type, int PC );
 int ALU(int opCode ,int typeSecond , int firstBus , int secondBus);
-int decToBinary(int n , int type);
+int * decToBinary(int number);
 void memory(int aluRes , int opCode , int rt);
-
+void writeBack(int aluResult , int memoryResult , int opCode);
+int binaryToDec(int * binaryNum);
 
 //functions ======================================================================================
 
@@ -86,6 +87,8 @@ void exe(int rsData , int rtDAta ,int rt , int rd, int opCOde ,int imm ,enum Typ
             secondBus = rt;
             secondType= 0;
             break;
+        default:
+            break;
     }
 
     int output = ALU(opCOde , secondType , firstBus , secondBus);
@@ -99,6 +102,9 @@ void exe(int rsData , int rtDAta ,int rt , int rd, int opCOde ,int imm ,enum Typ
 
 int ALU(int opCode , int type , int firstBus , int secondBus) {
 
+
+    int * first ;
+    int * second;
     switch (opCode) {
 
         case 0:
@@ -110,19 +116,38 @@ int ALU(int opCode , int type , int firstBus , int secondBus) {
                 return 1;
             return 0;
         case 3:
-            return decToBinary(firstBus , 0) | decToBinary(secondBus ,type );
+             first = decToBinary(firstBus);
+            second = decToBinary(secondBus);
+
+            for(int i = 0; i < 32; i++)
+                first[i] = first[i] | second[i];
+
+            return binaryToDec(first);
         case 4:
-            return !(decToBinary(firstBus ,0 ) & decToBinary(secondBus , type));
+            first = decToBinary(firstBus);
+            second = decToBinary(secondBus);
+
+            for(int i = 0; i < 32; i++)
+                first[i] = first[i] & second[i];
+
+            return binaryToDec(first);
+
         case 5:
             return firstBus + secondBus;
         case 6:
-            return decToBinary(firstBus , 0) | decToBinary(secondBus , type);
+            first = decToBinary(firstBus);
+            second = decToBinary(abs(secondBus)); //ori should be unsigned
+
+            for(int i = 0; i < 32; i++)
+                first[i] = first[i] | second[i];
+
+            return binaryToDec(first);
         case 7:
             if (secondBus - firstBus > 0)
                 return 1;
             return 0;
-        case 8:
-            return decToBinary(firstBus , 0) >> 16u;
+//        case 8:
+//            return binaryToDec(decToBinary(firstBus , 0) >> 16u);
         case 9:
             return firstBus + secondBus;
 
@@ -145,55 +170,95 @@ void memory(int aluRes , int opCode , int rtData){
         lw_result = memFile.mem_file[aluRes];
     else if (opCode == 10) //sw
         memFile.mem_file[aluRes] = rtData;
-    
+
+    if (opCode != 10)
+        writeBack(aluRes ,lw_result ,opCode);
 }
 
 
+void writeBack(int aluResult , int memoryResult , int opCode){
 
-int decToBinary(int n , int type)
+    int result = 0;
+
+    if(opCode == 9)//if memory result by lw should be chosen
+        result = memoryResult;
+    else
+        result = aluResult;
+
+    if (0 <= opCode && opCode <= 4)//we have rType
+        registerFile[]
+
+}
+
+int * decToBinary(int number)
 {
     // array to store binary number
     int binaryNum[32];
 
-    switch (type) {
+    for(int i = 0 ; i < 32 ; i++)
+        binaryNum[i] = 0;
 
-        case 1 :
-            //imm should be extended unsigned
-            for (int i= 0 ; i<32 ;++i)
-                binaryNum[i] = 0;
-            break;
-        default:
-            //rs , rt should be extended signed
-            if (n <0) {
-                for (int i = 0; i < 32; ++i)
-                    binaryNum[i] = 1;
-            } else
-                for (int i= 0 ; i<32 ;++i)
-                    binaryNum[i] = 0;
-            break;
-    }
-
-
+    int tmpNum = abs(number);
 
     // counter for binary array
     int i = 0;
-
-    while (n > 0) {
-        // storing remainder in binary array
-        binaryNum[i] = n % 2;
-        n = n / 2;
+    while (tmpNum > 0) {
+        binaryNum[i] = tmpNum % 2;
+        tmpNum = tmpNum / 2;
         i++;
     }
-
-    int answer = 0;
-    int power = 0;
-    // printing binary array in reverse order
-    for (int j =0 ; j < 32 ; ++j){
-
-        int temp = binaryNum[j] * ((int)pow(10 , power));
-        ++power;
-        answer += temp;
+    if(number < 0)
+    {
+        boolean zeroIgnorFlag = 0;
+        for(int i = 31 ; i >= 0 ; i--)
+        {
+            if(!binaryNum[i] && !zeroIgnorFlag)
+                continue;
+            else if(binaryNum[i] && !zeroIgnorFlag)
+            {
+                zeroIgnorFlag = 1;
+                continue;
+            }
+            else if(zeroIgnorFlag)
+                binaryNum[i] = !binaryNum[i];
+        }
     }
 
-    return  answer;
+    return binaryNum;
+
+}
+
+int binaryToDec(int * binaryNum)
+{
+    int decimal = 0;
+    int base = 1;
+    boolean isNegetiveFlag = 0;
+    if(binaryNum[0])
+    {
+        isNegetiveFlag = 1;
+        boolean zeroIgnorFlag = 0;
+        for(int i = 31 ; i >= 0 ; i--)
+        {
+            if(!binaryNum[i] && !zeroIgnorFlag)
+                continue;
+            else if(binaryNum[i] && !zeroIgnorFlag)
+            {
+                zeroIgnorFlag = 1;
+                continue;
+            }
+            else if(!binaryNum[i] && zeroIgnorFlag)
+                binaryNum[i] = 1;
+            else if(binaryNum[i] && zeroIgnorFlag)
+                binaryNum[i] = 0;
+        }
+    }
+
+    for (int i = 31 ; i >= 0 ; i--)
+    {
+        decimal += binaryNum[i] * base;
+        base *= 2;
+    }
+    if(isNegetiveFlag)
+        decimal *= -1;
+    return decimal;
 }
