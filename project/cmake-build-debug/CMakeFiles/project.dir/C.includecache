@@ -11,6 +11,8 @@ stdio.h
 -
 math.h
 -
+runCode.h
+D:/university/programs - memari/assembly project/assemblySemulation/project/runCode.h
 unistd.h
 -
 stdlib.h
@@ -26,7 +28,7 @@ stdio.h
 tchar.h
 -
 
-D:/university/programs - memari/assembly project/assemblySemulation/project/runCode.c
+D:/university/programs - memari/assembly project/assemblySemulation/project/runCode.h
 stdio.h
 -
 math.h

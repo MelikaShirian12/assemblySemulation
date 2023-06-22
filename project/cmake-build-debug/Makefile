@@ -149,33 +149,6 @@ main.c.s:
 	$(MAKE) -f CMakeFiles\project.dir\build.make CMakeFiles/project.dir/main.c.s
 .PHONY : main.c.s
 
-runCode.obj: runCode.c.obj
-
-.PHONY : runCode.obj
-
-# target to build an object file
-runCode.c.obj:
-	$(MAKE) -f CMakeFiles\project.dir\build.make CMakeFiles/project.dir/runCode.c.obj
-.PHONY : runCode.c.obj
-
-runCode.i: runCode.c.i
-
-.PHONY : runCode.i
-
-# target to preprocess a source file
-runCode.c.i:
-	$(MAKE) -f CMakeFiles\project.dir\build.make CMakeFiles/project.dir/runCode.c.i
-.PHONY : runCode.c.i
-
-runCode.s: runCode.c.s
-
-.PHONY : runCode.s
-
-# target to generate assembly for a file
-runCode.c.s:
-	$(MAKE) -f CMakeFiles\project.dir\build.make CMakeFiles/project.dir/runCode.c.s
-.PHONY : runCode.c.s
-
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -188,9 +161,6 @@ help:
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
-	@echo ... runCode.obj
-	@echo ... runCode.i
-	@echo ... runCode.s
 .PHONY : help
 
 

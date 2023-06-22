@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include "runCode.h"
 #ifdef __unix__                    /* __unix__ is usually defined by compilers targeting Unix systems */
 
 #define OS_Windows 0
@@ -22,72 +23,6 @@
 char R_TYPE [][5]= {"add","sub" ,"slt","or","nand"}; //5
 char I_TYPE [][5] ={"addi" , "ori" , "slti", "lui", "lw" , "sw" , "beq", "jalr"};//8
 char J_TYPE [][5] = {"j" , "halt"};//2
-
-//=================structs===============
-
-
-enum Types{
-    Itype , Rtype , Jtype , Null, DOTtype
-};
-
-
-struct MachineCode{
-
-    char hexMachineCode[9];
-    long int  decimalMachineCode;
-};
-
-struct Instruction{
-
-    enum Types insType;
-    struct MachineCode machineCode;
-    char inst[50];
-    int rs;
-    int rt;
-    int rd;
-    int imm; //and target address
-    int PC;
-    int opCode;
-    int directory;
-};
-
-
-struct Error{
-    int address;
-    //char lineOfError[250];
-    char errorInfo[60];
-};
-
-struct MyMap{
-    char each_label[20];
-    int address;
-};
-
-
-
-struct Program{
-    char inputProgram [100][250];
-    struct MyMap label[100];
-    struct Instruction instructions [100];
-    int labels_num;
-    int inputSize;
-
-};
-
-
-struct Program readingFiles(char * address);
-
-boolean find_Labels(struct Program * structProgram);
-
-boolean check_line_by_line(struct Program * structProgram);
-
-long int hex_to_decimal (char * hexdecnumber);
-
-boolean makeMachineCode(struct Program *structProgram);
-
-void writing_errors(struct Error error);
-
-void write_output(char * fileName , struct Program * structProgram);
 
 //=================functions==================
 
@@ -126,6 +61,10 @@ int main() {
 
 
     write_output(address, &programLines);
+
+
+    //==========================running the program
+    initial_memories(& programLines);
 
 
     return 0;

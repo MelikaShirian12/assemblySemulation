@@ -31,6 +31,7 @@ int * decToBinary(int number);
 void memory(int aluRes , struct Instruction instruction  , int rtData);
 void writeBack(int aluResult , int memoryResult , struct Instruction instruction );
 int binaryToDec(int * binaryNum);
+void branching();
 
 //functions ======================================================================================
 
@@ -190,7 +191,15 @@ void writeBack(int aluResult , int memoryResult ,struct Instruction instruction 
         registerFile.registers[instruction.rt] = result;
 
 }
+//===================================================== PC
 
+
+void branching(){
+
+}
+
+
+//=======================================================================================
 int * decToBinary(int number)
 {
     // array to store binary number

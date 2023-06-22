@@ -77,7 +77,10 @@
 		<Unit filename="D:/university/programs - memari/assembly project/assemblySemulation/project/main.c">
 			<Option target="project"/>
 		</Unit>
-		<Unit filename="D:/university/programs - memari/assembly project/assemblySemulation/project/runCode.c">
+		<Unit filename="D:/university/programs - memari/assembly project/assemblySemulation/project/main.h">
+			<Option target="project"/>
+		</Unit>
+		<Unit filename="D:/university/programs - memari/assembly project/assemblySemulation/project/runCode.h">
 			<Option target="project"/>
 		</Unit>
 		<Unit filename="D:/university/programs - memari/assembly project/assemblySemulation/project/CMakeLists.txt">
