@@ -24,12 +24,12 @@ struct MemoryFile memFile;
 
 void initial_memories(struct Program * runningProgram);
 boolean fetch(struct Program * runningProgram, int PC);
-void decode(int rs , int rt , int rd, int opCode ,int imm, enum Types type , int PC);
-void exe(int rsData , int rtDAta ,int rt , int rd , int opCode ,int imm, enum Types type, int PC );
+void decode(struct Instruction instruction);
+void exe(int rsData , int rtDAta ,struct Instruction instruction );
 int ALU(int opCode ,int typeSecond , int firstBus , int secondBus);
 int * decToBinary(int number);
-void memory(int aluRes , int opCode , int rt);
-void writeBack(int aluResult , int memoryResult , int opCode);
+void memory(int aluRes , struct Instruction instruction  , int rtData);
+void writeBack(int aluResult , int memoryResult , struct Instruction instruction );
 int binaryToDec(int * binaryNum);
 
 //functions ======================================================================================
@@ -56,48 +56,47 @@ boolean fetch(struct Program * runningProgram, int PC){
             break;
         //read the current address using pc and load it here
         struct Instruction new_instruction_line = runningProgram->instructions[PC];
-        decode(new_instruction_line.rs , new_instruction_line.rt , new_instruction_line.rd,
-                new_instruction_line.opCode , new_instruction_line.imm ,new_instruction_line.insType ,PC+1);
+        decode(new_instruction_line);
     }
 
     return 1;
 }
 
-void decode(int rs , int rt , int rd , int opCode ,int imm,enum Types type, int PC){
+void decode(struct Instruction instruction){
 
-    int readBus1 = registerFile.registers[rs];
-    int readBus2 = registerFile.registers[rt];
+    int readBus1 = registerFile.registers[instruction.rs];
+    int readBus2 = registerFile.registers[instruction.rt];
 
-    exe(readBus1, readBus2 ,rt ,  rd ,opCode, imm, type ,PC);
+    exe(readBus1, readBus2 ,instruction);
 }
 
-void exe(int rsData , int rtDAta ,int rt , int rd, int opCOde ,int imm ,enum Types type, int PC){
+void exe(int rsData , int rtDAta , struct Instruction instruction){
 
     int firstBus = rsData;
     int secondBus;
     int secondType;
 
-    switch (type) {
+    switch (instruction.insType) {
 
         case Itype:
-            secondBus = imm;
+            secondBus = instruction.imm;
             secondType=1;
             break;
         case Rtype:
-            secondBus = rt;
+            secondBus = instruction.rt;
             secondType= 0;
             break;
         default:
             break;
     }
 
-    int output = ALU(opCOde , secondType , firstBus , secondBus);
-    if (opCOde == 11) {
+    int output = ALU(instruction.opCode , secondType , firstBus , secondBus);
+    if (instruction.opCode == 11) {
         branching();
         return;
     }
 
-    memory(output , opCOde , rtDAta);
+    memory(output , instruction , rtDAta);
 }
 
 int ALU(int opCode , int type , int firstBus , int secondBus) {
@@ -163,30 +162,32 @@ int ALU(int opCode , int type , int firstBus , int secondBus) {
 }
 
 
-void memory(int aluRes , int opCode , int rtData){
+void memory(int aluRes ,struct Instruction instruction , int rtData){
 
     int lw_result = 0;
-    if (opCode == 9) //lw
+    if (instruction.opCode == 9) //lw
         lw_result = memFile.mem_file[aluRes];
-    else if (opCode == 10) //sw
+    else if (instruction.opCode == 10) //sw
         memFile.mem_file[aluRes] = rtData;
 
-    if (opCode != 10)
-        writeBack(aluRes ,lw_result ,opCode);
+    if (instruction.opCode != 10)
+        writeBack(aluRes ,lw_result ,instruction);
 }
 
 
-void writeBack(int aluResult , int memoryResult , int opCode){
+void writeBack(int aluResult , int memoryResult ,struct Instruction instruction ){
 
     int result = 0;
 
-    if(opCode == 9)//if memory result by lw should be chosen
+    if(instruction.opCode == 9)//if memory result by lw should be chosen
         result = memoryResult;
     else
         result = aluResult;
 
-    if (0 <= opCode && opCode <= 4)//we have rType
-        registerFile[]
+    if (0 <= instruction.opCode && instruction.opCode <= 4)//we have rType
+        registerFile.registers[instruction.rd] = result;
+    else
+        registerFile.registers[instruction.rt] = result;
 
 }
 
