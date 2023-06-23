@@ -28,6 +28,7 @@ struct Instruction{
     int PC;
     int opCode;
     int directory;
+    int diCode;
 };
 
 

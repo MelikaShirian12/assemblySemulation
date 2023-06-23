@@ -53,10 +53,8 @@ bool fetch(struct Program * runningProgram, int PC);
 void decode(struct Instruction instruction);
 void exe(int rsData , int rtDAta ,struct Instruction instruction );
 int ALU(int opCode ,int typeSecond , int firstBus , int secondBus);
-int * decToBinary(int number);
 void memory(int aluRes , struct Instruction instruction  , int rtData , int rsData);
 void writeBack(int aluResult , int memoryResult , struct Instruction instruction , int rsData);
-int binaryToDec(int * binaryNum);
 
 //functions ======================================================================================
 
@@ -152,6 +150,15 @@ int Adder(int bus1 , int bus2){
     return  bus1+bus2;
 }
 
+void havingDirectories(struct Instruction instruction){
+    if(instruction.diCode == 0)
+        memFile.mem_file[instruction.PC] = instruction.directory;
+    else{
+        for(int i = 0 ; i<instruction.directory ; ++i)
+            memFile.mem_file[instruction.PC + i] = 0;
+    }
+
+}
 
 bool fetch(struct Program * runningProgram , int pc){
 
@@ -178,7 +185,9 @@ bool fetch(struct Program * runningProgram , int pc){
 
         initial_controls(new_instruction_line);
 
-        decode(new_instruction_line);
+        if (new_instruction_line.insType == DOTtype)
+            havingDirectories(new_instruction_line);
+        else decode(new_instruction_line);
 
         ++j;
     }
@@ -262,7 +271,7 @@ int ALU(int opCode , int type , int firstBus , int secondBus) {
         case 3:
             return firstBus | secondBus;
         case 4:
-            return !(firstBus & secondBus);
+            return ~(firstBus & secondBus);
 
         case 5:
             return firstBus + secondBus;
