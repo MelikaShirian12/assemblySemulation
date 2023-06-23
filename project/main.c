@@ -29,6 +29,8 @@ char J_TYPE [][5] = {"j" , "halt"};//2
 
 int main() {
 
+    setbuf(stdout, NULL);
+
     if(OS_Windows)
         printf("Hello, Welcome to windows!\n");
     else
@@ -466,7 +468,15 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
                             make_the_error("wrong register input", size);
                             return 0;
                         }
-                        structProgram->instructions[size].imm = address;
+                        // checking if the address is before the instruction for beq
+                        if (structProgram->instructions[size].opCode == 11){
+                            if (address < structProgram->instructions[size].PC)
+                                structProgram->instructions[size].imm = address - structProgram->instructions[size].PC -1;
+                            else {
+                                structProgram->instructions[size].imm = address - 1 - structProgram->instructions[size].PC;
+                            }
+                        }
+                        else  structProgram->instructions[size].imm = address;
                     }
 
                 }
