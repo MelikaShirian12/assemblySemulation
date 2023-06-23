@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "runCode.h"
+
 #ifdef __unix__                    /* __unix__ is usually defined by compilers targeting Unix systems */
 
 #define OS_Windows 0
@@ -33,7 +34,6 @@ int main() {
     else
         printf("Hello, linux!\n");
 
-
     printf("write your command as : assemble program.as program.mc\n");
 
 
@@ -53,8 +53,8 @@ int main() {
     if ( !true_labels )
         exit(1);
 
-    boolean true = check_line_by_line(& programLines);
-    if (!true)
+    bool right = check_line_by_line(& programLines);
+    if (!right)
         exit(1);
 
     makeMachineCode(& programLines);
@@ -189,7 +189,7 @@ boolean check_label(char * token){
 
 }
 
-boolean find_Labels(struct Program * structProgram){
+bool find_Labels(struct Program * structProgram){
 
 
     structProgram->labels_num = 0;
@@ -482,7 +482,7 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
 }
 
 
-boolean check_line_by_line(struct Program * structProgram){
+bool check_line_by_line(struct Program * structProgram){
 
     for (int i=0 ; i<structProgram->inputSize ; ++i) {
 
@@ -635,7 +635,7 @@ long int hex_to_decimal (char * hexdecnumber){
 
 //=====================================make the machine code ==============================
 
- boolean makeMachineCode(struct Program *structProgram){
+ bool makeMachineCode(struct Program *structProgram){
 
     for (int i = 0; i <structProgram->inputSize ; ++i) {
         int dicChecker =0;

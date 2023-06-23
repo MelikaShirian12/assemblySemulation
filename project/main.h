@@ -1,12 +1,7 @@
-
-#ifndef PROJECT_MAIN_H
-#define PROJECT_MAIN_H
-
-#endif //PROJECT_MAIN_H
-
 #include <stdio.h>
 #include <math.h>
-#include <rpcndr.h>
+#include <stdbool.h>
+
 
 //=================structs===============
 
@@ -61,13 +56,13 @@ struct Program{
 
 struct Program readingFiles(char * address);
 
-boolean find_Labels(struct Program * structProgram);
+bool find_Labels(struct Program * structProgram);
 
-boolean check_line_by_line(struct Program * structProgram);
+bool check_line_by_line(struct Program * structProgram);
 
 long int hex_to_decimal (char * hexdecnumber);
 
-boolean makeMachineCode(struct Program *structProgram);
+bool makeMachineCode(struct Program *structProgram);
 
 void writing_errors(struct Error error);
 
