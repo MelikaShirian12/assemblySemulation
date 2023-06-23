@@ -1,2 +1,2 @@
-	nand	1,2,3
+	nand	2,2,21
 	halt

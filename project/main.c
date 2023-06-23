@@ -326,7 +326,7 @@ int calculateRegister(char * my_register){
     else
         return -1;//wrong input
     if (my_register[1] != 0 && my_register[1]!= '\n') {
-        if (my_register[1] >= '0' && my_register[1] <= '4') {
+        if (my_register[1] >= '0' && my_register[1] <= '5' &&  (my_register[0] == '0' ||  my_register[0]== '1' )) {
             number *= 10;
             number += (my_register[1] - 48);
         }
@@ -435,6 +435,15 @@ boolean makeRegiInstruction(char * token, struct Program * structProgram , int s
                 else {
                     //and make immediate value , null
                     result = calculateRegister(my_register);
+
+                    if (result < 0) {//exception
+
+                        printf("wrong register input :%d",size);
+                        make_the_error("wrong register input" , size);
+
+                        return 0;
+                    }
+
                     structProgram->instructions[size].rt = result;
                     structProgram->instructions[size].imm = -100;
                 }
@@ -537,7 +546,7 @@ bool check_line_by_line(struct Program * structProgram){
                     if (checking == 0) {
                         check = makeOpInstruction(token, structProgram , i);
                         ++checking;//which means we already check the instruction
-                        --spaceNum;
+                        --spaceNum; //reset switch case number for the next input
                         if (check == 0 ){
                             //exception
                             return 0;
@@ -653,7 +662,7 @@ long int hex_to_decimal (char * hexdecnumber){
  bool makeMachineCode(struct Program *structProgram){
 
     for (int i = 0; i <structProgram->inputSize ; ++i) {
-        int dicChecker =0;
+        int diChecker =0;
         char eachMachineCode [9];
 
 
@@ -695,10 +704,10 @@ long int hex_to_decimal (char * hexdecnumber){
 
                 int tmpDif = 4 - (int)strlen(tmpImm);
 
-                for(int j = 0 ; j  < tmpDif; j++)
+                for(int j = 0 ; j  < tmpDif; ++j)
                     eachMachineCode[j+4] = '0';
 
-                for(int j = 0 ; j < 4 ; j++)
+                for(int j = 0 ; j < 4 ; ++j)
                     eachMachineCode[j+4+tmpDif] = tmpImm[j];
 
                 break;
@@ -727,12 +736,12 @@ long int hex_to_decimal (char * hexdecnumber){
                 case DOTtype:
                     structProgram->instructions[i].machineCode.decimalMachineCode =
                             structProgram->instructions[i].directory;
-                    dicChecker =1;
+                    diChecker =1;
                     break;
 
         }
 
-        if (dicChecker == 1)
+        if (diChecker == 1)
             continue;
 
         strcpy((char *) structProgram->instructions[i].machineCode.hexMachineCode, eachMachineCode);
