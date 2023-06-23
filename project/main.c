@@ -288,6 +288,11 @@ boolean makeOpInstruction(char * token ,struct Program * structProgram , int siz
             new_instruction.insType = DOTtype;
             new_instruction.PC= size;
 
+            if(strcmp(token , ".fill") == 0)
+                new_instruction.diCode = 0;
+            else new_instruction.diCode = 1;
+
+
             structProgram->instructions[size] = new_instruction;
 
 
