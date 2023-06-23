@@ -57,7 +57,6 @@ int * decToBinary(int number);
 void memory(int aluRes , struct Instruction instruction  , int rtData , int rsData);
 void writeBack(int aluResult , int memoryResult , struct Instruction instruction , int rsData);
 int binaryToDec(int * binaryNum);
-void branching();
 
 //functions ======================================================================================
 
@@ -124,7 +123,7 @@ void initial_controls(struct Instruction ins){
     //======================ALUSrc
     if ((ins.opCode >=0 && ins.opCode<5) || ins.opCode == 11)
         controlUnit.ALUSrc = 0;
-    else if (ins.opCode == 12)
+    else if (ins.opCode == 12 || ins.opCode == 13 || ins.opCode == 14)
         controlUnit.ALUSrc = 1111;
     else controlUnit.ALUSrc = 1;
 
@@ -137,6 +136,11 @@ void initial_controls(struct Instruction ins){
     if (ins.opCode == 12)
         controlUnit.jalr = 1;
     else controlUnit.jalr = 0;
+
+    //=======================jump
+    if (ins.opCode == 13)
+        controlUnit.jump = 1;
+    else controlUnit.jump = 0;
 
     // ------------ ALU UNIT --------------
     aluControl.operation = ins.opCode;
@@ -152,6 +156,9 @@ int Adder(int bus1 , int bus2){
 bool fetch(struct Program * runningProgram , int pc){
 
     PC = pc;
+    printf("=======Start========\n");
+    int j=0;
+
     while (1) {
         for(int i= 0 ; i<16 ; ++i)
             printf("[register %d]: %d\n" , i , registerFile.registers[i]);
@@ -163,6 +170,7 @@ bool fetch(struct Program * runningProgram , int pc){
 
         //read the current address using pc and load it here
         struct Instruction new_instruction_line = runningProgram->instructions[PC];
+        printf("=======instruction line : %d /opcode: %d ======\n" , j+1 , new_instruction_line.opCode);
 
 
         //control unit -----> pc = pc+1
@@ -171,6 +179,8 @@ bool fetch(struct Program * runningProgram , int pc){
         initial_controls(new_instruction_line);
 
         decode(new_instruction_line);
+
+        ++j;
     }
 
     return 1;
@@ -183,11 +193,13 @@ void decode(struct Instruction instruction){
     if (controlUnit.halt == 1)
         PC = -1;
 
-    //DECODE path
-
-    int readBus1 = registerFile.registers[instruction.rs];
-    int readBus2 = registerFile.registers[instruction.rt];
-
+    int readBus1 = 0;
+    int readBus2 = 0;
+    if (instruction.opCode != 13 && instruction.opCode != 14) {
+        //DECODE path
+        readBus1 = registerFile.registers[instruction.rs];
+        readBus2 = registerFile.registers[instruction.rt];
+    }
     exe(readBus1, readBus2 ,instruction);
 }
 
@@ -204,7 +216,7 @@ void exe(int rsData , int rtDAta , struct Instruction instruction){
 
         case 1:
             secondBus = instruction.imm;
-            if (instruction.opCode == 10 || instruction.opCode == 11) // for jal and beq
+            if (instruction.opCode == 11 || instruction.opCode == 12) // for jal and beq
                 secondBus = rtDAta;
             secondType=1;
             break;
@@ -238,10 +250,12 @@ int ALU(int opCode , int type , int firstBus , int secondBus) {
         case 0:
             return firstBus + secondBus;
         case 1:
-            aluControl.zero = 1;
+            if (firstBus - secondBus == 0)
+                aluControl.zero = 1;
             return firstBus - secondBus;
         case 2:
-            aluControl.zero = 1;
+            if (firstBus - secondBus == 0)
+                aluControl.zero = 1;
             if (secondBus - firstBus > 0)
                 return 1;
             return 0;
@@ -255,7 +269,8 @@ int ALU(int opCode , int type , int firstBus , int secondBus) {
         case 6:
             return firstBus | secondBus;
         case 7:
-            aluControl.zero = 1;
+            if (firstBus - secondBus == 0)
+                aluControl.zero = 1;
             if (secondBus - firstBus > 0)
                 return 1;
             return 0;
@@ -267,7 +282,8 @@ int ALU(int opCode , int type , int firstBus , int secondBus) {
         case 10:
             return firstBus + secondBus;
         case 11:
-            aluControl.zero = 1;
+            if (firstBus - secondBus == 0)
+                aluControl.zero = 1;
             if (secondBus-firstBus ==0)
                 return 1;
             return 0;
@@ -290,7 +306,7 @@ void memory(int aluRes ,struct Instruction instruction , int rtData , int rsData
     else if (controlUnit.MemWrite == 1) //sw
         memFile.mem_file[aluRes] = rtData;
 
-    if (instruction.opCode != 10) //sw doesnt have write back
+    if (instruction.opCode != 10 && instruction.opCode != 11) //sw , beq doesnt have write back
         writeBack(aluRes ,lw_result ,instruction ,rsData);
 }
 
@@ -316,7 +332,7 @@ void writeBack(int aluResult , int memoryResult ,struct Instruction instruction 
 
    //======================= second MUX 1 to 2
    if(controlUnit.jalr == 1)
-       result = PC +1;
+       result = instruction.PC+1;
 
     //======================writing to register MUX 1 to 2
 
